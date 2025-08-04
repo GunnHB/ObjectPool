@@ -11,7 +11,7 @@
 
 UObjectPoolSubsystem::UObjectPoolSubsystem()
 {
-	ObjectPoolDataTable = TSoftObjectPtr<UDataTable>(FSoftObjectPath("/Script/Engine.DataTable'/Game/_DataTables/DT_ObjectPool.DT_ObjectPool'"));
+	ObjectPoolDataTable = TSoftObjectPtr<UDataTable>(FSoftObjectPath(TEXT("/Script/Engine.DataTable'/Game/_DataTables/DT_ObjectPool.DT_ObjectPool'")));
 }
 
 void UObjectPoolSubsystem::OnWorldBeginPlay(UWorld& InWorld)
