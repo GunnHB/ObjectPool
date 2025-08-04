@@ -10,6 +10,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Interfaces/PoolableInterface.h"
+#include "Subsystems/ObjectPoolSubsystem.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -86,6 +88,9 @@ void AObjectPoolCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AObjectPoolCharacter::Look);
+
+		// Fire
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AObjectPoolCharacter::Fire);
 	}
 	else
 	{
@@ -127,4 +132,45 @@ void AObjectPoolCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void AObjectPoolCharacter::Fire(const FInputActionValue& Value)
+{
+	FVector NewLocation = GetActorLocation() + GetActorForwardVector() * -100.f;
+
+	RequestObject(BulletTag, NewLocation);
+}
+
+void AObjectPoolCharacter::RequestObject(const FGameplayTag InGameplayTag, const FVector& InLocation)
+{
+	if (HasAuthority())
+		Handle_RequestObject(InGameplayTag, InLocation);
+	else
+		Server_RequestObject(InGameplayTag, InLocation);
+}
+
+void AObjectPoolCharacter::Server_RequestObject_Implementation(const FGameplayTag InGameplayTag, const FVector& InLocation)
+{
+	Handle_RequestObject(InGameplayTag, InLocation);
+}
+
+void AObjectPoolCharacter::Handle_RequestObject(const FGameplayTag InGameplayTag, const FVector& InLocation)
+{
+	AActor* PooledActor = GetWorld()->GetSubsystem<UObjectPoolSubsystem>()->GetObjectFromPool(InGameplayTag, GetController());
+	if (PooledActor == nullptr)
+		return;
+
+	Multicast_RequestObject(PooledActor, InLocation);
+}
+
+void AObjectPoolCharacter::Multicast_RequestObject_Implementation(AActor* InActor, const FVector& InLocation)
+{
+	if (IsValid(InActor) == false)
+		return;
+
+	InActor->SetActorLocation(InLocation);
+
+	IPoolableInterface* Poolable = Cast<IPoolableInterface>(InActor);
+	if (Poolable)
+		Poolable->OnPoolActivate();
 }

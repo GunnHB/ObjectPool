@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "ObjectPoolCharacter.generated.h"
@@ -43,6 +44,13 @@ class AObjectPoolCharacter : public ACharacter
 	/** Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
+	
+	/** Fire Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* FireAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = GameplayTags, meta=(AllowPrivateAccess="true"))
+	FGameplayTag BulletTag;
 
 public:
 	AObjectPoolCharacter();
@@ -55,6 +63,9 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+	
+	/** Called for fire input */
+	void Fire(const FInputActionValue& Value);
 			
 
 protected:
@@ -69,5 +80,16 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+private:
+	void RequestObject(const FGameplayTag InGameplayTag, const FVector& InLocation);
+
+	void Handle_RequestObject(const FGameplayTag InGameplayTag, const FVector& InLocation);
+
+	UFUNCTION(Server, Reliable)
+	void Server_RequestObject(const FGameplayTag InGameplayTag, const FVector& InLocation);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_RequestObject(AActor* InActor, const FVector& InLocation);
 };
 
