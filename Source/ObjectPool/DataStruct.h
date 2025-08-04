@@ -15,7 +15,7 @@ public:
 	FGameplayTag ObjectTag;
 
 	UPROPERTY(EditAnywhere)
-	TSoftObjectPtr<AActor> ActorClass = nullptr;
+	TSoftClassPtr<AActor> ActorClass = nullptr;
 
 	UPROPERTY(EditAnywhere)
 	int32 PoolSize = 0;
