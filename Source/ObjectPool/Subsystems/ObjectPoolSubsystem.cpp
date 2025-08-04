@@ -63,7 +63,8 @@ void UObjectPoolSubsystem::AsyncLoadObject(UDataTable* DataTable)
 				if (Poolable)
 					Poolable->OnPoolDeactivate();
 
-				ActorPool.Pool.Emplace(SpawnedActor);
+				ActorPool.AllObjects.Emplace(SpawnedActor);
+				ActorPool.AvailableObjects.Emplace(SpawnedActor);
 			}
 		});
 
@@ -77,19 +78,16 @@ AActor* UObjectPoolSubsystem::GetObjectFromPool(const FGameplayTag InGameplayTag
 	if (ActorPool == nullptr)
 		return nullptr;
 
-	for (const TObjectPtr<AActor>& Actor : ActorPool->Pool)
+	// 동적으로 크기 늘리는 로직 추가
+	if (ActorPool->AvailableObjects.Num() == 0)
+		return nullptr;
+
+	AActor* PooledActor = ActorPool->AvailableObjects.Pop().Get();
+	if (IsValid(PooledActor))
 	{
-		if (IsValid(Actor) == false)
-			continue;
-
-		UPoolableComponent* Poolable = Actor->GetComponentByClass<UPoolableComponent>();
-		if (IsValid(Poolable) == false || Poolable->GetIsActivate())
-			continue;
-
-		Actor->SetOwner(Owner);
-
-		return Actor.Get();
+		PooledActor->SetOwner(Owner);
+		return PooledActor;
 	}
-
+	
 	return nullptr;
 }

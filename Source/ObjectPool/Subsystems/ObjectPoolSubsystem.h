@@ -17,7 +17,10 @@ struct FActorPool
 	GENERATED_BODY()
 
 	UPROPERTY()
-	TArray<TObjectPtr<AActor>> Pool;
+	TArray<TObjectPtr<AActor>> AllObjects;
+
+	UPROPERTY()
+	TArray<TObjectPtr<AActor>> AvailableObjects;
 };
 
 UCLASS()
