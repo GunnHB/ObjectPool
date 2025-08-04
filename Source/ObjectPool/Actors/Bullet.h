@@ -7,6 +7,9 @@
 #include "ObjectPool/Interfaces/PoolableInterface.h"
 #include "Bullet.generated.h"
 
+class USphereComponent;
+class UPoolableComponent;
+
 UCLASS()
 class OBJECTPOOL_API ABullet : public AActor, public IPoolableInterface
 {
@@ -17,4 +20,16 @@ public:
 
 	virtual void OnPoolActivate() override;
 	virtual void OnPoolDeactivate() override;
+
+	virtual void Destroyed() override;
+
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UStaticMeshComponent> MeshComponent = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<USphereComponent> CollisionComponent = nullptr;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UPoolableComponent> PoolableComponent = nullptr;
 };
