@@ -3,6 +3,8 @@
 
 #include "ObjectPoolSubsystem.h"
 
+#include "Engine/AssetManager.h"
+#include "Engine/StreamableManager.h"
 #include "ObjectPool/DataStruct.h"
 
 UObjectPoolSubsystem::UObjectPoolSubsystem()
@@ -40,19 +42,27 @@ void UObjectPoolSubsystem::AsyncLoadObject(UDataTable* DataTable)
 
 	for (const FObjectPoolData* Data : AllData)
 	{
-		// 동기 방식
-		UClass* LoadedActor = Data->ActorClass.LoadSynchronous();
-		if (IsValid(LoadedActor) == false)
-			continue;
+		const FObjectPoolData CachedData = *Data;
 
-		FActorPool& ActorPool = ObjectPoolMap.FindOrAdd(Data->ObjectTag);
-		for (int32 Index = 0; Index < Data->PoolSize; ++Index)
+		FStreamableDelegate SpawnDelegate = FStreamableDelegate::CreateLambda([this, CachedData]()
 		{
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+			UClass* ActorClass = CachedData.ActorClass.Get();
+			if (IsValid(ActorClass) == false)
+				return;
 
-			AActor* PooledActor = GetWorld()->SpawnActor<AActor>(LoadedActor, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
-		}
+			FActorPool& ActorPool = ObjectPoolMap.FindOrAdd(CachedData.ObjectTag);
+			for (int32 Index = 0; Index < CachedData.PoolSize; Index++)
+			{
+				FActorSpawnParameters SpawnParams;
+				SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+				AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(ActorClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+				if (IsValid(SpawnedActor) == false)
+					continue;
+			}
+		});
+
+		UAssetManager::GetStreamableManager().RequestAsyncLoad(CachedData.ActorClass.ToSoftObjectPath(), SpawnDelegate);
 	}
 }
 
