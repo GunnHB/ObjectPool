@@ -6,6 +6,7 @@
 #include "Engine/AssetManager.h"
 #include "Engine/StreamableManager.h"
 #include "ObjectPool/DataStruct.h"
+#include "ObjectPool/Components/PoolableComponent.h"
 #include "ObjectPool/Interfaces/PoolableInterface.h"
 
 UObjectPoolSubsystem::UObjectPoolSubsystem()
@@ -13,20 +14,17 @@ UObjectPoolSubsystem::UObjectPoolSubsystem()
 	ObjectPoolDataTable = TSoftObjectPtr<UDataTable>(FSoftObjectPath("/Script/Engine.DataTable'/Game/_DataTables/DT_ObjectPool.DT_ObjectPool'"));
 }
 
-void UObjectPoolSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+void UObjectPoolSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
-	Super::Initialize(Collection);
+	Super::OnWorldBeginPlay(InWorld);
 
-	if (GetWorld()->IsGameWorld() == false)
-		return;
-	
-	if (GetWorld()->GetNetMode() == NM_Client)
+	if (GetWorld()->GetNetMode() == NM_Client || ObjectPoolMap.Num() > 0)
 		return;
 
-	GameStateDelegateHandle = GetWorld()->GameStateSetEvent.AddUObject(this, &ThisClass::BindGameStateSet);
+	InitPool();
 }
 
-void UObjectPoolSubsystem::BindGameStateSet(AGameStateBase* GameState)
+void UObjectPoolSubsystem::InitPool()
 {
 	if (ObjectPoolDataTable.IsNull() == false)
 	{
@@ -73,19 +71,25 @@ void UObjectPoolSubsystem::AsyncLoadObject(UDataTable* DataTable)
 	}
 }
 
-void UObjectPoolSubsystem::Deinitialize()
-{
-	Super::Deinitialize();
-
-	GetWorld()->GameStateSetEvent.Remove(GameStateDelegateHandle);
-}
-
-void UObjectPoolSubsystem::OnWorldBeginPlay(UWorld& InWorld)
-{
-	Super::OnWorldBeginPlay(InWorld);
-}
-
 AActor* UObjectPoolSubsystem::GetObjectFromPool(const FGameplayTag InGameplayTag, AActor* Owner)
 {
+	FActorPool* ActorPool = ObjectPoolMap.Find(InGameplayTag);
+	if (ActorPool == nullptr)
+		return nullptr;
+
+	for (const TObjectPtr<AActor>& Actor : ActorPool->Pool)
+	{
+		if (IsValid(Actor) == false)
+			continue;
+
+		UPoolableComponent* Poolable = Actor->GetComponentByClass<UPoolableComponent>();
+		if (IsValid(Poolable) == false || Poolable->GetIsActivate())
+			continue;
+
+		Actor->SetOwner(Owner);
+
+		return Actor.Get();
+	}
+
 	return nullptr;
 }

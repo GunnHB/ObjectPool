@@ -27,10 +27,7 @@ class OBJECTPOOL_API UObjectPoolSubsystem : public UWorldSubsystem
 
 public:
 	UObjectPoolSubsystem();
-
-	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
-	virtual void Deinitialize() override;
-
+	
 	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 
 	AActor* GetObjectFromPool(const FGameplayTag InGameplayTag, AActor* Owner);
@@ -42,9 +39,7 @@ protected:
 	UPROPERTY()
 	TMap<FGameplayTag, FActorPool> ObjectPoolMap;
 
-	FDelegateHandle GameStateDelegateHandle;
-
 private:
-	void BindGameStateSet(AGameStateBase* GameState);
+	void InitPool();
 	void AsyncLoadObject(UDataTable* DataTable);
 };
