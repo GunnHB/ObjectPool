@@ -63,7 +63,7 @@ void UObjectPoolSubsystem::AsyncLoadObject(UDataTable* DataTable)
 
 				IPoolableInterface* Poolable = Cast<IPoolableInterface>(SpawnedActor);
 				if (Poolable)
-					Poolable->OnDeactivate();
+					Poolable->OnPoolDeactivate();
 
 				ActorPool.Pool.Emplace(SpawnedActor);
 			}

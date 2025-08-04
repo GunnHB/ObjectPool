@@ -15,6 +15,6 @@ class OBJECTPOOL_API ABullet : public AActor, public IPoolableInterface
 public:
 	ABullet();
 
-	virtual void OnActivate() override;
-	virtual void OnDeactivate() override;
+	virtual void OnPoolActivate() override;
+	virtual void OnPoolDeactivate() override;
 };

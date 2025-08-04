@@ -22,6 +22,6 @@ class OBJECTPOOL_API IPoolableInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual void OnActivate() = 0;
-	virtual void OnDeactivate() = 0;
+	virtual void OnPoolActivate() = 0;
+	virtual void OnPoolDeactivate() = 0;
 };

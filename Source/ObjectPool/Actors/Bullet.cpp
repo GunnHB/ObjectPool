@@ -8,12 +8,12 @@ ABullet::ABullet()
 	bReplicates = true;
 }
 
-void ABullet::OnActivate()
+void ABullet::OnPoolActivate()
 {
 	UE_LOG(LogTemp, Warning, TEXT("OnActivate"));
 }
 
-void ABullet::OnDeactivate()
+void ABullet::OnPoolDeactivate()
 {
 	UE_LOG(LogTemp, Warning, TEXT("OnDeactivate"));
 }
