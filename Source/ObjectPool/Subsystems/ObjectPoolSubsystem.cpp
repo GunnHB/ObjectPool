@@ -6,6 +6,7 @@
 #include "Engine/AssetManager.h"
 #include "Engine/StreamableManager.h"
 #include "ObjectPool/DataStruct.h"
+#include "ObjectPool/Interfaces/PoolableInterface.h"
 
 UObjectPoolSubsystem::UObjectPoolSubsystem()
 {
@@ -59,6 +60,12 @@ void UObjectPoolSubsystem::AsyncLoadObject(UDataTable* DataTable)
 				AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(ActorClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
 				if (IsValid(SpawnedActor) == false)
 					continue;
+
+				IPoolableInterface* Poolable = Cast<IPoolableInterface>(SpawnedActor);
+				if (Poolable)
+					Poolable->OnDeactivate();
+
+				ActorPool.Pool.Emplace(SpawnedActor);
 			}
 		});
 
