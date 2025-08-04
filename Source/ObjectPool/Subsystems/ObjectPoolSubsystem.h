@@ -42,7 +42,9 @@ protected:
 	UPROPERTY()
 	TMap<FGameplayTag, FActorPool> ObjectPoolMap;
 
+	FDelegateHandle GameStateDelegateHandle;
+
 private:
-	void InitPool();
-	void AsyncLoadObject();
+	void BindGameStateSet(AGameStateBase* GameState);
+	void AsyncLoadObject(UDataTable* DataTable);
 };
