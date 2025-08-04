@@ -15,6 +15,10 @@ void UPoolableComponent::OnActivate()
 		return;
 
 	bIsActivate = true;
+
+	Owner->SetActorTickEnabled(true);
+	Owner->SetActorHiddenInGame(false);
+	Owner->SetActorEnableCollision(true);
 }
 
 void UPoolableComponent::OnDeactivate()
@@ -24,4 +28,8 @@ void UPoolableComponent::OnDeactivate()
 		return;
 
 	bIsActivate = false;
+
+	Owner->SetActorTickEnabled(false);
+	Owner->SetActorHiddenInGame(true);
+	Owner->SetActorEnableCollision(false);
 }
