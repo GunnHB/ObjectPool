@@ -10,6 +10,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Actors/Bullet.h"
 #include "Interfaces/PoolableInterface.h"
 #include "Subsystems/ObjectPoolSubsystem.h"
 
@@ -136,7 +137,7 @@ void AObjectPoolCharacter::Look(const FInputActionValue& Value)
 
 void AObjectPoolCharacter::Fire(const FInputActionValue& Value)
 {
-	FVector NewLocation = GetActorLocation() + GetActorForwardVector() * -100.f;
+	FVector NewLocation = GetActorLocation() + GetActorForwardVector() * 100.f;
 
 	RequestObject(BulletTag, NewLocation);
 }
@@ -169,8 +170,12 @@ void AObjectPoolCharacter::Multicast_RequestObject_Implementation(AActor* InActo
 		return;
 
 	InActor->SetActorLocation(InLocation);
-
+	
 	IPoolableInterface* Poolable = Cast<IPoolableInterface>(InActor);
-	if (Poolable)
+	if (Poolable != nullptr)
 		Poolable->OnPoolActivate();
+
+	ABullet* Bullet = Cast<ABullet>(InActor);
+	if (IsValid(Bullet))
+		 Bullet->FireInDirection(GetActorForwardVector());
 }

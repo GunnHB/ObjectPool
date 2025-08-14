@@ -7,6 +7,7 @@
 #include "ObjectPool/Interfaces/PoolableInterface.h"
 #include "Bullet.generated.h"
 
+class UProjectileMovementComponent;
 class USphereComponent;
 class UPoolableComponent;
 
@@ -21,8 +22,6 @@ public:
 	virtual void OnPoolActivate() override;
 	virtual void OnPoolDeactivate() override;
 
-	virtual void Destroyed() override;
-
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UStaticMeshComponent> MeshComponent = nullptr;
@@ -32,4 +31,10 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UPoolableComponent> PoolableComponent = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UProjectileMovementComponent> ProjectileMovementComponent = nullptr;
+
+public:
+	void FireInDirection(const FVector& ShootDirection);
 };
