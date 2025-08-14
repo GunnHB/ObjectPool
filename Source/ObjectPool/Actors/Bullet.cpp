@@ -7,6 +7,8 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "ObjectPool/Components/PoolableComponent.h"
 
+#include "ObjectPool/DebugHelper.h"
+
 ABullet::ABullet()
 {
 	bReplicates = true;
@@ -33,16 +35,18 @@ ABullet::ABullet()
 
 void ABullet::OnPoolActivate()
 {
-	UE_LOG(LogTemp, Warning, TEXT("OnActivate"));
-
+	const FString Msg = FString::Printf(TEXT("%s Activate"), *GetActorNameOrLabel());
+	Debug::Print(Msg, FColor::Green);
+	
 	if (IsValid(PoolableComponent))
 		PoolableComponent->OnActivate();
 }
 
 void ABullet::OnPoolDeactivate()
 {
-	UE_LOG(LogTemp, Warning, TEXT("OnDeactivate"));
-
+	const FString Msg = FString::Printf(TEXT("%s Deactivate"), *GetActorNameOrLabel());
+	Debug::Print(Msg, FColor::Red);
+	
 	if (IsValid(PoolableComponent))
 		PoolableComponent->OnDeactivate();
 }
