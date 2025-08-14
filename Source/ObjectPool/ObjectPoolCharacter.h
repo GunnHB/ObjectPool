@@ -82,14 +82,14 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 private:
-	void RequestObject(const FGameplayTag InGameplayTag, const FVector& InLocation);
-
-	void Handle_RequestObject(const FGameplayTag InGameplayTag, const FVector& InLocation);
-
+	void RequestObject(const FGameplayTag& InGameplayTag, const FVector& InLocation, const FVector& InDirection);
+	
+	void Handle_RequestObject(const FGameplayTag& InGameplayTag, const FVector& InLocation, const FVector& InDirection);
+	
 	UFUNCTION(Server, Reliable)
-	void Server_RequestObject(const FGameplayTag InGameplayTag, const FVector& InLocation);
-
+	void Server_RequestObject(const FGameplayTag& InGameplayTag, const FVector& InLocation, const FVector& InDirection);
+	
 	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_RequestObject(AActor* InActor, const FVector& InLocation);
+	void Multicast_RequestObject(AActor* InActor, const FVector& InLocation, const FVector& InDirection);
 };
 

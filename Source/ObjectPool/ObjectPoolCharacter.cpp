@@ -137,34 +137,45 @@ void AObjectPoolCharacter::Look(const FInputActionValue& Value)
 
 void AObjectPoolCharacter::Fire(const FInputActionValue& Value)
 {
-	FVector NewLocation = GetActorLocation() + GetActorForwardVector() * 100.f;
+	// FVector NewLocation = GetActorLocation() + GetActorForwardVector() * 100.f;
+	//
+	// RequestObject(BulletTag, NewLocation);
 
-	RequestObject(BulletTag, NewLocation);
+	// 8 way
+	for (uint8 Index = 0; Index < 8; ++Index)
+	{
+		const float CurrentAngleRad = FMath::DegreesToRadians(Index * 45.f);
+
+		const FVector DirectionVector = FVector(FMath::Cos(CurrentAngleRad), FMath::Sin(CurrentAngleRad), 0.f);
+		const FVector SpawnLocation = GetActorLocation() + DirectionVector * 50.f;
+
+		RequestObject(BulletTag, SpawnLocation, DirectionVector);
+	}
 }
 
-void AObjectPoolCharacter::RequestObject(const FGameplayTag InGameplayTag, const FVector& InLocation)
+void AObjectPoolCharacter::RequestObject(const FGameplayTag& InGameplayTag, const FVector& InLocation, const FVector& InDirection)
 {
 	if (HasAuthority())
-		Handle_RequestObject(InGameplayTag, InLocation);
+		Handle_RequestObject(InGameplayTag, InLocation, InDirection);
 	else
-		Server_RequestObject(InGameplayTag, InLocation);
+		Server_RequestObject(InGameplayTag, InLocation, InDirection);
 }
 
-void AObjectPoolCharacter::Server_RequestObject_Implementation(const FGameplayTag InGameplayTag, const FVector& InLocation)
+void AObjectPoolCharacter::Server_RequestObject_Implementation(const FGameplayTag& InGameplayTag, const FVector& InLocation, const FVector& InDirection)
 {
-	Handle_RequestObject(InGameplayTag, InLocation);
+	Handle_RequestObject(InGameplayTag, InLocation, InDirection);
 }
 
-void AObjectPoolCharacter::Handle_RequestObject(const FGameplayTag InGameplayTag, const FVector& InLocation)
+void AObjectPoolCharacter::Handle_RequestObject(const FGameplayTag& InGameplayTag, const FVector& InLocation, const FVector& InDirection)
 {
 	AActor* PooledActor = GetWorld()->GetSubsystem<UObjectPoolSubsystem>()->GetObjectFromPool(InGameplayTag, GetController());
 	if (PooledActor == nullptr)
 		return;
 
-	Multicast_RequestObject(PooledActor, InLocation);
+	Multicast_RequestObject(PooledActor, InLocation, InDirection);
 }
 
-void AObjectPoolCharacter::Multicast_RequestObject_Implementation(AActor* InActor, const FVector& InLocation)
+void AObjectPoolCharacter::Multicast_RequestObject_Implementation(AActor* InActor, const FVector& InLocation, const FVector& InDirection)
 {
 	if (IsValid(InActor) == false)
 		return;
@@ -173,5 +184,5 @@ void AObjectPoolCharacter::Multicast_RequestObject_Implementation(AActor* InActo
 	
 	ABullet* Bullet = Cast<ABullet>(InActor);
 	if (IsValid(Bullet))
-		 Bullet->FireInDirection(GetActorForwardVector());
+		 Bullet->FireInDirection(InDirection);
 }
