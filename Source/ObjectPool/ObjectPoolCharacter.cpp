@@ -12,6 +12,7 @@
 #include "InputActionValue.h"
 #include "Actors/Bullet.h"
 #include "Interfaces/PoolableInterface.h"
+#include "Settings/ObjectPoolSettings.h"
 #include "Subsystems/ObjectPoolSubsystem.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -91,7 +92,7 @@ void AObjectPoolCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AObjectPoolCharacter::Look);
 
 		// Fire
-		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AObjectPoolCharacter::Fire);
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &AObjectPoolCharacter::Fire);
 	}
 	else
 	{
@@ -137,9 +138,8 @@ void AObjectPoolCharacter::Look(const FInputActionValue& Value)
 
 void AObjectPoolCharacter::Fire(const FInputActionValue& Value)
 {
-	// FVector NewLocation = GetActorLocation() + GetActorForwardVector() * 100.f;
-	//
-	// RequestObject(BulletTag, NewLocation);
+	if (bCanFire == false)
+		return;
 
 	// 8 way
 	for (uint8 Index = 0; Index < 8; ++Index)
@@ -149,8 +149,22 @@ void AObjectPoolCharacter::Fire(const FInputActionValue& Value)
 		const FVector DirectionVector = FVector(FMath::Cos(CurrentAngleRad), FMath::Sin(CurrentAngleRad), 0.f);
 		const FVector SpawnLocation = GetActorLocation() + DirectionVector * 50.f;
 
-		RequestObject(BulletTag, SpawnLocation, DirectionVector);
+		if (GetDefault<UObjectPoolSettings>()->bIsEnabled)
+			RequestObject(BulletTag, SpawnLocation, DirectionVector);
+		// else
+		// 	RequestObject(SpawnLocation, DirectionVector);
 	}
+	
+	bCanFire = false;
+	
+	GetWorld()->GetTimerManager().SetTimer(FireCoolDownTimerHandle, this, &ThisClass::FireCoolDown, CoolDownTime);
+}
+
+void AObjectPoolCharacter::FireCoolDown()
+{
+	bCanFire = true;
+
+	GetWorld()->GetTimerManager().ClearTimer(FireCoolDownTimerHandle);
 }
 
 void AObjectPoolCharacter::RequestObject(const FGameplayTag& InGameplayTag, const FVector& InLocation, const FVector& InDirection)
@@ -186,3 +200,20 @@ void AObjectPoolCharacter::Multicast_RequestObject_Implementation(AActor* InActo
 	if (IsValid(Bullet))
 		 Bullet->FireInDirection(InDirection);
 }
+
+// void AObjectPoolCharacter::RequestObject(const FVector& InLocation, const FVector& InDirection)
+// {
+// 	if (HasAuthority())
+// }
+//
+// void AObjectPoolCharacter::Handle_RequestObject(const FVector& InLocation, const FVector& InDirection)
+// {
+// }
+//
+// void AObjectPoolCharacter::Server_RequestObject_Implementation(const FGameplayTag& InGameplayTag, const FVector& InLocation, const FVector& InDirection)
+// {
+// }
+//
+// void AObjectPoolCharacter::Multicast_RequestObject_Implementation(AActor* InActor, const FVector& InLocation, const FVector& InDirection)
+// {
+// }

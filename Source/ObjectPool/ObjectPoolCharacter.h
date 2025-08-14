@@ -82,6 +82,16 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 private:
+	FTimerHandle FireCoolDownTimerHandle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
+	float CoolDownTime = 0.f;
+	
+	bool bCanFire = true;
+
+	void FireCoolDown();
+	
+#pragma region Pooling
 	void RequestObject(const FGameplayTag& InGameplayTag, const FVector& InLocation, const FVector& InDirection);
 	
 	void Handle_RequestObject(const FGameplayTag& InGameplayTag, const FVector& InLocation, const FVector& InDirection);
@@ -91,5 +101,18 @@ private:
 	
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_RequestObject(AActor* InActor, const FVector& InLocation, const FVector& InDirection);
+#pragma endregion 
+
+#pragma region Spawn
+	// void RequestObject(const FVector& InLocation, const FVector& InDirection);
+	//
+	// void Handle_RequestObject(const FVector& InLocation, const FVector& InDirection);
+	//
+	// UFUNCTION(Server, Reliable)
+	// void Server_RequestObject(const FVector& InLocation, const FVector& InDirection);
+	//
+	// UFUNCTION(NetMulticast, Reliable)
+	// void Multicast_RequestObject(const FVector& InLocation, const FVector& InDirection);
+#pragma endregion
 };
 
