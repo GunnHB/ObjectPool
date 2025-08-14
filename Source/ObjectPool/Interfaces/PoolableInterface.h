@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "UObject/Interface.h"
 #include "PoolableInterface.generated.h"
 
@@ -22,6 +23,6 @@ class OBJECTPOOL_API IPoolableInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual void OnPoolActivate() = 0;
+	virtual void OnPoolActivate(const FGameplayTag& InGameplayTag) = 0;
 	virtual void OnPoolDeactivate() = 0;
 };

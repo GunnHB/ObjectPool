@@ -20,7 +20,7 @@ class OBJECTPOOL_API ABullet : public AActor, public IPoolableInterface
 public:
 	ABullet();
 
-	virtual void OnPoolActivate() override;
+	virtual void OnPoolActivate(const FGameplayTag& InGameplayTag) override;
 	virtual void OnPoolDeactivate() override;
 
 protected:

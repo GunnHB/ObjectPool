@@ -171,10 +171,6 @@ void AObjectPoolCharacter::Multicast_RequestObject_Implementation(AActor* InActo
 
 	InActor->SetActorLocation(InLocation);
 	
-	IPoolableInterface* Poolable = Cast<IPoolableInterface>(InActor);
-	if (Poolable != nullptr)
-		Poolable->OnPoolActivate();
-
 	ABullet* Bullet = Cast<ABullet>(InActor);
 	if (IsValid(Bullet))
 		 Bullet->FireInDirection(GetActorForwardVector());

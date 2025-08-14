@@ -36,25 +36,28 @@ ABullet::ABullet()
 	ProjectileMovementComponent->ProjectileGravityScale = 0.0f;
 }
 
-void ABullet::OnPoolActivate()
+void ABullet::OnPoolActivate(const FGameplayTag& InGameplayTag)
 {
 	const FString Msg = FString::Printf(TEXT("%s Activate"), *GetActorNameOrLabel());
 	Debug::Print(Msg, FColor::Green);
 	
 	if (IsValid(PoolableComponent))
-		PoolableComponent->OnActivate();
+		PoolableComponent->OnActivate(InGameplayTag);
 
 	if (IsValid(PoolableLifeTimeComponent))
-		PoolableLifeTimeComponent->ActivateLifeTimer();
+		PoolableLifeTimeComponent->StartTimer();
 }
 
 void ABullet::OnPoolDeactivate()
 {
 	const FString Msg = FString::Printf(TEXT("%s Deactivate"), *GetActorNameOrLabel());
 	Debug::Print(Msg, FColor::Red);
-	
+
 	if (IsValid(PoolableComponent))
 		PoolableComponent->OnDeactivate();
+
+	if (IsValid(PoolableLifeTimeComponent))
+		PoolableLifeTimeComponent->StopTimer();
 }
 
 void ABullet::FireInDirection(const FVector& ShootDirection)

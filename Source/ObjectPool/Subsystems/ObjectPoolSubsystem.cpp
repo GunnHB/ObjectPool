@@ -72,13 +72,13 @@ void UObjectPoolSubsystem::AsyncLoadObject(UDataTable* DataTable)
 	}
 }
 
-AActor* UObjectPoolSubsystem::GetObjectFromPool(const FGameplayTag InGameplayTag, AActor* Owner)
+AActor* UObjectPoolSubsystem::GetObjectFromPool(const FGameplayTag& InGameplayTag, AActor* Owner)
 {
 	FActorPool* ActorPool = ObjectPoolMap.Find(InGameplayTag);
 	if (ActorPool == nullptr)
 		return nullptr;
 
-	// 동적으로 크기 늘리는 로직 추가
+	// todo: 동적으로 크기 늘리는 로직 추가
 	if (ActorPool->AvailableObjects.Num() == 0)
 		return nullptr;
 
@@ -86,8 +86,29 @@ AActor* UObjectPoolSubsystem::GetObjectFromPool(const FGameplayTag InGameplayTag
 	if (IsValid(PooledActor))
 	{
 		PooledActor->SetOwner(Owner);
+		
+		IPoolableInterface* Poolable = Cast<IPoolableInterface>(PooledActor);
+		if (Poolable != nullptr)
+			Poolable->OnPoolActivate(InGameplayTag);
+		
 		return PooledActor;
 	}
 	
 	return nullptr;
+}
+
+void UObjectPoolSubsystem::ReturnObjectToPool(AActor* Actor)
+{
+	UPoolableComponent* PoolableComponent = Actor->GetComponentByClass<UPoolableComponent>();
+	IPoolableInterface* Poolable = Cast<IPoolableInterface>(Actor);
+
+	if (IsValid(PoolableComponent) == false || Poolable == nullptr)
+		return;
+
+	FActorPool* ActorPool = ObjectPoolMap.Find(PoolableComponent->GetGameplayTag());
+	if (ActorPool == nullptr)
+		return;
+
+	ActorPool->AvailableObjects.Emplace(Actor);
+	Poolable->OnPoolDeactivate();
 }

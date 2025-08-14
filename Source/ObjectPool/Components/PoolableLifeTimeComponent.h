@@ -13,7 +13,8 @@ class OBJECTPOOL_API UPoolableLifeTimeComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
-	void ActivateLifeTimer();
+	void StartTimer();
+	void StopTimer();
 
 private:
 	FTimerHandle LifeTimeHandle;
@@ -21,5 +22,5 @@ private:
 	UPROPERTY(EditDefaultsOnly, meta=(AllowPrivateAccess=true))
 	float LifeTime = 0.f;
 
-	void ReturnToPool();
+	void OnLifeTimeEnd();
 };

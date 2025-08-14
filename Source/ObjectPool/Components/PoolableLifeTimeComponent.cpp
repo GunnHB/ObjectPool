@@ -3,15 +3,22 @@
 
 #include "PoolableLifeTimeComponent.h"
 
-#include "ObjectPool/DebugHelper.h"
+#include "ObjectPool/Subsystems/ObjectPoolSubsystem.h"
 
-
-void UPoolableLifeTimeComponent::ActivateLifeTimer()
+void UPoolableLifeTimeComponent::StartTimer()
 {
-	GetWorld()->GetTimerManager().SetTimer(LifeTimeHandle, this, &ThisClass::ReturnToPool,LifeTime, false);
+	if (LifeTime > 0.f)
+		GetWorld()->GetTimerManager().SetTimer(LifeTimeHandle, this, &ThisClass::OnLifeTimeEnd,LifeTime, false);
 }
 
-void UPoolableLifeTimeComponent::ReturnToPool()
+void UPoolableLifeTimeComponent::StopTimer()
 {
-	Debug::Print(TEXT("ReturnToPool"));
+	GetWorld()->GetTimerManager().ClearTimer(LifeTimeHandle);
+}
+
+void UPoolableLifeTimeComponent::OnLifeTimeEnd()
+{
+	AActor* Owner = GetOwner();
+	if (IsValid(Owner))
+		GetWorld()->GetSubsystem<UObjectPoolSubsystem>()->ReturnObjectToPool(Owner);
 }

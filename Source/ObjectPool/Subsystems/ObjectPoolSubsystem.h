@@ -33,7 +33,8 @@ public:
 	
 	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 
-	AActor* GetObjectFromPool(const FGameplayTag InGameplayTag, AActor* Owner);
+	AActor* GetObjectFromPool(const FGameplayTag& InGameplayTag, AActor* Owner);
+	void ReturnObjectToPool(AActor* Actor);
 
 protected:
 	UPROPERTY()
