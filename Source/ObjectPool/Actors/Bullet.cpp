@@ -58,6 +58,12 @@ void ABullet::OnPoolDeactivate()
 
 	if (IsValid(PoolableLifeTimeComponent))
 		PoolableLifeTimeComponent->StopTimer();
+
+	if (IsValid(ProjectileMovementComponent))
+	{
+		ProjectileMovementComponent->StopMovementImmediately();
+		ProjectileMovementComponent->Velocity = FVector::ZeroVector;
+	}
 }
 
 void ABullet::FireInDirection(const FVector& ShootDirection)
