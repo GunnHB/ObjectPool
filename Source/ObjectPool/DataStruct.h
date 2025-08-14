@@ -17,6 +17,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSoftClassPtr<AActor> ActorClass = nullptr;
 
-	UPROPERTY(EditAnywhere)
-	int32 PoolSize = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 PoolSize = 10;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 MaxPoolSize = 30;
 };

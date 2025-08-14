@@ -17,10 +17,16 @@ struct FActorPool
 	GENERATED_BODY()
 
 	UPROPERTY()
+	UClass* SpawnActorClass = nullptr;
+
+	UPROPERTY()
 	TArray<TObjectPtr<AActor>> AllObjects;
 
 	UPROPERTY()
 	TArray<TObjectPtr<AActor>> AvailableObjects;
+
+	UPROPERTY()
+	int32 MaxPoolSize = 0;
 };
 
 UCLASS()
@@ -46,4 +52,6 @@ protected:
 private:
 	void InitPool();
 	void AsyncLoadObject(UDataTable* DataTable);
+
+	bool ExpandPool(FActorPool& InActorPool);
 };

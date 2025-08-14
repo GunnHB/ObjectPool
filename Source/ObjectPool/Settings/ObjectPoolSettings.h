@@ -14,7 +14,7 @@ class OBJECTPOOL_API UObjectPoolSettings : public UDeveloperSettings
 {
 	GENERATED_BODY()
 
-protected:
+public:
 	UPROPERTY(Config, EditAnywhere)
 	bool bIsEnabled = true;
 };

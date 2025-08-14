@@ -28,8 +28,8 @@ ABullet::ABullet()
 
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
 	ProjectileMovementComponent->SetUpdatedComponent(MeshComponent);
-	ProjectileMovementComponent->InitialSpeed = 3000.0f;
-	ProjectileMovementComponent->MaxSpeed = 3000.0f;
+	ProjectileMovementComponent->InitialSpeed = 500.0f;
+	ProjectileMovementComponent->MaxSpeed = 500.0f;
 	ProjectileMovementComponent->bRotationFollowsVelocity = true;
 	ProjectileMovementComponent->bShouldBounce = true;
 	ProjectileMovementComponent->Bounciness = 0.3f;

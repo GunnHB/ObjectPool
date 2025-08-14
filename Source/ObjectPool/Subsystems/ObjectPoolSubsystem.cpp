@@ -6,11 +6,16 @@
 #include "Engine/AssetManager.h"
 #include "Engine/StreamableManager.h"
 #include "ObjectPool/DataStruct.h"
+#include "ObjectPool/DebugHelper.h"
 #include "ObjectPool/Components/PoolableComponent.h"
 #include "ObjectPool/Interfaces/PoolableInterface.h"
+#include "ObjectPool/Settings/ObjectPoolSettings.h"
 
 UObjectPoolSubsystem::UObjectPoolSubsystem()
 {
+	if (GetDefault<UObjectPoolSettings>()->bIsEnabled == false)
+		return;
+	
 	ObjectPoolDataTable = TSoftObjectPtr<UDataTable>(FSoftObjectPath(TEXT("/Script/Engine.DataTable'/Game/_DataTables/DT_ObjectPool.DT_ObjectPool'")));
 }
 
@@ -66,10 +71,44 @@ void UObjectPoolSubsystem::AsyncLoadObject(UDataTable* DataTable)
 				ActorPool.AllObjects.Emplace(SpawnedActor);
 				ActorPool.AvailableObjects.Emplace(SpawnedActor);
 			}
+			
+			ActorPool.SpawnActorClass = ActorClass;
+			ActorPool.MaxPoolSize = CachedData.MaxPoolSize;
 		});
 
 		UAssetManager::GetStreamableManager().RequestAsyncLoad(CachedData.ActorClass.ToSoftObjectPath(), SpawnDelegate);
 	}
+}
+
+bool UObjectPoolSubsystem::ExpandPool(FActorPool& InActorPool)
+{
+	if (InActorPool.AllObjects.Num() >= InActorPool.MaxPoolSize)
+		return false;
+
+	// 현재 크기만큼 생성하되, 최대 크기는 넘지 않도록
+	uint32 NumToSpawn = FMath::Min(InActorPool.AllObjects.Num(), InActorPool.MaxPoolSize - InActorPool.AllObjects.Num());
+
+	if (NumToSpawn <= 0)
+		return false;
+
+	for (uint32 Index = 0; Index < NumToSpawn; ++Index)
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+		AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(InActorPool.SpawnActorClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+		if (IsValid(SpawnedActor) == false)
+			continue;
+
+		IPoolableInterface* Poolable = Cast<IPoolableInterface>(SpawnedActor);
+		if (Poolable)
+			Poolable->OnPoolDeactivate();
+
+		InActorPool.AllObjects.Emplace(SpawnedActor);
+		InActorPool.AvailableObjects.Emplace(SpawnedActor);
+	}
+
+	return true;
 }
 
 AActor* UObjectPoolSubsystem::GetObjectFromPool(const FGameplayTag& InGameplayTag, AActor* Owner)
@@ -77,10 +116,12 @@ AActor* UObjectPoolSubsystem::GetObjectFromPool(const FGameplayTag& InGameplayTa
 	FActorPool* ActorPool = ObjectPoolMap.Find(InGameplayTag);
 	if (ActorPool == nullptr)
 		return nullptr;
-
-	// todo: 동적으로 크기 늘리는 로직 추가
-	if (ActorPool->AvailableObjects.Num() == 0)
-		return nullptr;
+	
+	if (ActorPool->AvailableObjects.Num() <= 0)
+	{
+		if (ExpandPool(*ActorPool) == false)
+			return nullptr;
+	}
 
 	AActor* PooledActor = ActorPool->AvailableObjects.Pop().Get();
 	if (IsValid(PooledActor))
