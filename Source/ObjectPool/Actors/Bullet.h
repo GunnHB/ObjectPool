@@ -7,6 +7,7 @@
 #include "ObjectPool/Interfaces/PoolableInterface.h"
 #include "Bullet.generated.h"
 
+class UPoolableLifeTimeComponent;
 class UProjectileMovementComponent;
 class USphereComponent;
 class UPoolableComponent;
@@ -31,6 +32,9 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UPoolableComponent> PoolableComponent = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UPoolableLifeTimeComponent> PoolableLifeTimeComponent = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UProjectileMovementComponent> ProjectileMovementComponent = nullptr;

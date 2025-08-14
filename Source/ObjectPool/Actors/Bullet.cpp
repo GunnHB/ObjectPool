@@ -8,6 +8,7 @@
 #include "ObjectPool/Components/PoolableComponent.h"
 
 #include "ObjectPool/DebugHelper.h"
+#include "ObjectPool/Components/PoolableLifeTimeComponent.h"
 
 ABullet::ABullet()
 {
@@ -22,6 +23,8 @@ ABullet::ABullet()
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	PoolableComponent = CreateDefaultSubobject<UPoolableComponent>(TEXT("PoolableComponent"));
+
+	PoolableLifeTimeComponent = CreateDefaultSubobject<UPoolableLifeTimeComponent>(TEXT("LifeTimeComponent"));
 
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
 	ProjectileMovementComponent->SetUpdatedComponent(MeshComponent);
@@ -40,6 +43,9 @@ void ABullet::OnPoolActivate()
 	
 	if (IsValid(PoolableComponent))
 		PoolableComponent->OnActivate();
+
+	if (IsValid(PoolableLifeTimeComponent))
+		PoolableLifeTimeComponent->ActivateLifeTimer();
 }
 
 void ABullet::OnPoolDeactivate()
