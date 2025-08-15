@@ -26,57 +26,54 @@ void UObjectPoolSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 	if (GetWorld()->GetNetMode() == NM_Client || ObjectPoolMap.Num() > 0)
 		return;
 
-	InitPool();
+	LoadDataTable();
 }
 
-void UObjectPoolSubsystem::InitPool()
+void UObjectPoolSubsystem::LoadDataTable()
 {
-	if (ObjectPoolDataTable.IsNull() == false)
+	if (ObjectPoolDataTable.IsNull())
+		return;
+
+	FStreamableDelegate InitPoolDelegate = FStreamableDelegate::CreateLambda([this]
 	{
-		UDataTable* LoadedDataTable = ObjectPoolDataTable.LoadSynchronous();
+		UDataTable* LoadedDataTable = ObjectPoolDataTable.Get();
 		if (IsValid(LoadedDataTable))
-			AsyncLoadObject(LoadedDataTable);
-	}
+			InitPool(LoadedDataTable);
+	});
+
+	UAssetManager::GetStreamableManager().RequestAsyncLoad(ObjectPoolDataTable.ToSoftObjectPath(), InitPoolDelegate);
 }
 
-void UObjectPoolSubsystem::AsyncLoadObject(UDataTable* DataTable)
+void UObjectPoolSubsystem::InitPool(const UDataTable* InDataTable)
 {
 	TArray<FObjectPoolData*> AllData;
-	DataTable->GetAllRows<FObjectPoolData>(__FUNCTION__, AllData);
+	InDataTable->GetAllRows<FObjectPoolData>(__FUNCTION__, AllData);
 
 	for (const FObjectPoolData* Data : AllData)
 	{
-		const FObjectPoolData CachedData = *Data;
+		if (Data->ObjectTag == FGameplayTag::EmptyTag || IsValid(Data->ActorClass) == false)
+			continue;
 
-		FStreamableDelegate SpawnDelegate = FStreamableDelegate::CreateLambda([this, CachedData]()
+		FActorPool& ActorPool = ObjectPoolMap.FindOrAdd(Data->ObjectTag);
+		for (int32 Index = 0; Index < Data->PoolSize; ++Index)
 		{
-			UClass* ActorClass = CachedData.ActorClass.Get();
-			if (IsValid(ActorClass) == false)
-				return;
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	
+			AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(Data->ActorClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+			if (IsValid(SpawnedActor) == false)
+				continue;
+	
+			IPoolableInterface* Poolable = Cast<IPoolableInterface>(SpawnedActor);
+			if (Poolable)
+				Poolable->OnPoolDeactivate();
+	
+			ActorPool.AllObjects.Emplace(SpawnedActor);
+			ActorPool.AvailableObjects.Emplace(SpawnedActor);
+		}
 
-			FActorPool& ActorPool = ObjectPoolMap.FindOrAdd(CachedData.ObjectTag);
-			for (int32 Index = 0; Index < CachedData.PoolSize; Index++)
-			{
-				FActorSpawnParameters SpawnParams;
-				SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-				AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(ActorClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
-				if (IsValid(SpawnedActor) == false)
-					continue;
-
-				IPoolableInterface* Poolable = Cast<IPoolableInterface>(SpawnedActor);
-				if (Poolable)
-					Poolable->OnPoolDeactivate();
-
-				ActorPool.AllObjects.Emplace(SpawnedActor);
-				ActorPool.AvailableObjects.Emplace(SpawnedActor);
-			}
-			
-			ActorPool.SpawnActorClass = ActorClass;
-			ActorPool.MaxPoolSize = CachedData.MaxPoolSize;
-		});
-
-		UAssetManager::GetStreamableManager().RequestAsyncLoad(CachedData.ActorClass.ToSoftObjectPath(), SpawnDelegate);
+		ActorPool.SpawnActorClass = Data->ActorClass;
+		ActorPool.MaxPoolSize = Data->MaxPoolSize;
 	}
 }
 

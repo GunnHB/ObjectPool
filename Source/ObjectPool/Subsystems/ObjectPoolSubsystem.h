@@ -50,8 +50,8 @@ protected:
 	TMap<FGameplayTag, FActorPool> ObjectPoolMap;
 
 private:
-	void InitPool();
-	void AsyncLoadObject(UDataTable* DataTable);
+	void LoadDataTable();
+	void InitPool(const UDataTable* InDataTable);
 
 	bool ExpandPool(FActorPool& InActorPool);
 };

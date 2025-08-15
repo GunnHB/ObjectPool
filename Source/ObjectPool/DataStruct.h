@@ -15,7 +15,7 @@ public:
 	FGameplayTag ObjectTag;
 
 	UPROPERTY(EditAnywhere)
-	TSoftClassPtr<AActor> ActorClass = nullptr;
+	TSubclassOf<AActor> ActorClass = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 PoolSize = 10;
