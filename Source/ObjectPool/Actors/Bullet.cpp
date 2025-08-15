@@ -38,8 +38,8 @@ ABullet::ABullet()
 
 void ABullet::OnPoolActivate(const FGameplayTag& InGameplayTag)
 {
-	const FString Msg = FString::Printf(TEXT("%s Activate"), *GetActorNameOrLabel());
-	Debug::Print(Msg, FColor::Green);
+	// const FString Msg = FString::Printf(TEXT("%s Activate"), *GetActorNameOrLabel());
+	// Debug::Print(Msg, FColor::Green);
 	
 	if (IsValid(PoolableComponent))
 		PoolableComponent->OnActivate(InGameplayTag);
@@ -50,8 +50,8 @@ void ABullet::OnPoolActivate(const FGameplayTag& InGameplayTag)
 
 void ABullet::OnPoolDeactivate()
 {
-	const FString Msg = FString::Printf(TEXT("%s Deactivate"), *GetActorNameOrLabel());
-	Debug::Print(Msg, FColor::Red);
+	// const FString Msg = FString::Printf(TEXT("%s Deactivate"), *GetActorNameOrLabel());
+	// Debug::Print(Msg, FColor::Red);
 
 	if (IsValid(PoolableComponent))
 		PoolableComponent->OnDeactivate();

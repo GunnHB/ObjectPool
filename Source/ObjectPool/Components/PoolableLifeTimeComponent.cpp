@@ -3,6 +3,7 @@
 
 #include "PoolableLifeTimeComponent.h"
 
+#include "ObjectPool/Settings/ObjectPoolSettings.h"
 #include "ObjectPool/Subsystems/ObjectPoolSubsystem.h"
 
 void UPoolableLifeTimeComponent::StartTimer()
@@ -19,6 +20,11 @@ void UPoolableLifeTimeComponent::StopTimer()
 void UPoolableLifeTimeComponent::OnLifeTimeEnd()
 {
 	AActor* Owner = GetOwner();
-	if (IsValid(Owner))
+	if (IsValid(Owner) == false)
+		return;
+	
+	if (GetDefault<UObjectPoolSettings>()->bIsEnabled)
 		GetWorld()->GetSubsystem<UObjectPoolSubsystem>()->ReturnObjectToPool(Owner);
+	else
+		Owner->Destroy();
 }

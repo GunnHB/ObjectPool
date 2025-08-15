@@ -8,6 +8,7 @@
 #include "Logging/LogMacros.h"
 #include "ObjectPoolCharacter.generated.h"
 
+class ABullet;
 class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
@@ -104,15 +105,18 @@ private:
 #pragma endregion 
 
 #pragma region Spawn
-	// void RequestObject(const FVector& InLocation, const FVector& InDirection);
-	//
-	// void Handle_RequestObject(const FVector& InLocation, const FVector& InDirection);
-	//
-	// UFUNCTION(Server, Reliable)
-	// void Server_RequestObject(const FVector& InLocation, const FVector& InDirection);
-	//
-	// UFUNCTION(NetMulticast, Reliable)
-	// void Multicast_RequestObject(const FVector& InLocation, const FVector& InDirection);
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
+	TSubclassOf<ABullet> BulletClass = nullptr;
+	
+	void SpawnObject(const FVector& InLocation, const FVector& InDirection);
+	
+	void Handle_SpawnObject(const FVector& InLocation, const FVector& InDirection);
+	
+	UFUNCTION(Server, Reliable)
+	void Server_SpawnObject(const FVector& InLocation, const FVector& InDirection);
+	
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_SpawnObject(AActor* InActor, const FVector& InLocation, const FVector& InDirection);
 #pragma endregion
 };
 

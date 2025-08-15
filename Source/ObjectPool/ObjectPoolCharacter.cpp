@@ -11,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Actors/Bullet.h"
+#include "Components/PoolableLifeTimeComponent.h"
 #include "Interfaces/PoolableInterface.h"
 #include "Settings/ObjectPoolSettings.h"
 #include "Subsystems/ObjectPoolSubsystem.h"
@@ -151,8 +152,8 @@ void AObjectPoolCharacter::Fire(const FInputActionValue& Value)
 
 		if (GetDefault<UObjectPoolSettings>()->bIsEnabled)
 			RequestObject(BulletTag, SpawnLocation, DirectionVector);
-		// else
-		// 	RequestObject(SpawnLocation, DirectionVector);
+		else
+			SpawnObject(SpawnLocation, DirectionVector);
 	}
 	
 	bCanFire = false;
@@ -201,19 +202,45 @@ void AObjectPoolCharacter::Multicast_RequestObject_Implementation(AActor* InActo
 		 Bullet->FireInDirection(InDirection);
 }
 
-// void AObjectPoolCharacter::RequestObject(const FVector& InLocation, const FVector& InDirection)
-// {
-// 	if (HasAuthority())
-// }
-//
-// void AObjectPoolCharacter::Handle_RequestObject(const FVector& InLocation, const FVector& InDirection)
-// {
-// }
-//
-// void AObjectPoolCharacter::Server_RequestObject_Implementation(const FGameplayTag& InGameplayTag, const FVector& InLocation, const FVector& InDirection)
-// {
-// }
-//
-// void AObjectPoolCharacter::Multicast_RequestObject_Implementation(AActor* InActor, const FVector& InLocation, const FVector& InDirection)
-// {
-// }
+void AObjectPoolCharacter::SpawnObject(const FVector& InLocation, const FVector& InDirection)
+{
+	if (HasAuthority())
+		Handle_SpawnObject(InLocation, InDirection);
+	else
+		Server_SpawnObject(InLocation, InDirection);
+}
+
+void AObjectPoolCharacter::Handle_SpawnObject(const FVector& InLocation, const FVector& InDirection)
+{
+	if (BulletClass == nullptr)
+		return;
+	
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(BulletClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+	if (IsValid(SpawnedActor))
+	{
+		if (UPoolableLifeTimeComponent* PoolableLifeTimeComponent = SpawnedActor->GetComponentByClass<UPoolableLifeTimeComponent>())
+			PoolableLifeTimeComponent->StartTimer();
+		
+		Multicast_SpawnObject(SpawnedActor, InLocation, InDirection);
+	}
+}
+
+void AObjectPoolCharacter::Server_SpawnObject_Implementation(const FVector& InLocation, const FVector& InDirection)
+{
+	Handle_SpawnObject(InLocation, InDirection);
+}
+
+void AObjectPoolCharacter::Multicast_SpawnObject_Implementation(AActor* InActor, const FVector& InLocation, const FVector& InDirection)
+{
+	if (IsValid(InActor) == false)
+		return;
+
+	InActor->SetActorLocation(InLocation);
+	
+	ABullet* Bullet = Cast<ABullet>(InActor);
+	if (IsValid(Bullet))
+		Bullet->FireInDirection(InDirection);
+}
