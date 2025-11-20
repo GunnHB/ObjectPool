@@ -13,6 +13,7 @@
 ABullet::ABullet()
 {
 	bReplicates = true;
+	bAlwaysRelevant = true;	// 거리에 상관없이 동기화
 
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
 	MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
