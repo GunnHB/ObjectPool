@@ -139,25 +139,47 @@ void AObjectPoolCharacter::Look(const FInputActionValue& Value)
 
 void AObjectPoolCharacter::Fire(const FInputActionValue& Value)
 {
+	// if (bCanFire == false)
+	// 	return;
+	//
+	// // 8 way
+	// for (uint8 Index = 0; Index < 8; ++Index)
+	// {
+	// 	const float CurrentAngleRad = FMath::DegreesToRadians(Index * 45.f);
+	//
+	// 	const FVector DirectionVector = FVector(FMath::Cos(CurrentAngleRad), FMath::Sin(CurrentAngleRad), 0.f);
+	// 	const FVector SpawnLocation = GetActorLocation() + DirectionVector * 50.f;
+	//
+	// 	if (GetDefault<UObjectPoolSettings>()->bIsEnabled)
+	// 		RequestObject(BulletTag, SpawnLocation, DirectionVector);
+	// 	else
+	// 		SpawnObject(SpawnLocation, DirectionVector);
+	// }
+	//
+	// bCanFire = false;
+	//
+	// GetWorld()->GetTimerManager().SetTimer(FireCoolDownTimerHandle, this, &ThisClass::FireCoolDown, CoolDownTime);
+
 	if (bCanFire == false)
 		return;
 
-	// 8 way
-	for (uint8 Index = 0; Index < 8; ++Index)
+	FVector ActorLocation = GetActorLocation();
+	
+	for (int Index = 0; Index < NumToSpawn; ++Index)
 	{
-		const float CurrentAngleRad = FMath::DegreesToRadians(Index * 45.f);
+		float RandX = FMath::RandRange(-SpawnRadius, SpawnRadius);
+		float RandY = FMath::RandRange(-SpawnRadius, SpawnRadius);
 
-		const FVector DirectionVector = FVector(FMath::Cos(CurrentAngleRad), FMath::Sin(CurrentAngleRad), 0.f);
-		const FVector SpawnLocation = GetActorLocation() + DirectionVector * 50.f;
+		FVector SpawnLocation = ActorLocation + FVector(RandX, RandY, SpawnHeight);
 
 		if (GetDefault<UObjectPoolSettings>()->bIsEnabled)
-			RequestObject(BulletTag, SpawnLocation, DirectionVector);
+			RequestObject(BulletTag, SpawnLocation, FVector::DownVector);
 		else
-			SpawnObject(SpawnLocation, DirectionVector);
+			SpawnObject(SpawnLocation, FVector::DownVector);
 	}
-	
+
 	bCanFire = false;
-	
+
 	GetWorld()->GetTimerManager().SetTimer(FireCoolDownTimerHandle, this, &ThisClass::FireCoolDown, CoolDownTime);
 }
 

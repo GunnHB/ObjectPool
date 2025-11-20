@@ -85,7 +85,7 @@ public:
 private:
 	FTimerHandle FireCoolDownTimerHandle;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Pooling", meta=(AllowPrivateAccess=true))
 	float CoolDownTime = 0.f;
 	
 	bool bCanFire = true;
@@ -105,8 +105,17 @@ private:
 #pragma endregion 
 
 #pragma region Spawn
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Spawn", meta=(AllowPrivateAccess=true))
 	TSubclassOf<ABullet> BulletClass = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Spawn", meta=(AllowPrivateAccess=true))
+	int NumToSpawn = 0;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Spawn", meta=(AllowPrivateAccess=true))
+	float SpawnHeight = 0.f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Spawn", meta=(AllowPrivateAccess=true))
+	float SpawnRadius = 0.f;
 	
 	void SpawnObject(const FVector& InLocation, const FVector& InDirection);
 	
