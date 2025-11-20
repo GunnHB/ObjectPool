@@ -21,7 +21,7 @@ Listen Server 환경에서 동작하는 Unreal Engine 5 기반 Object Pool 시�
   - `ActorClass`, `PoolSize` 등을 로드
   - StreamableManager를 사용해 비동기 로드 처리
 
-#### 타입 기반 풀 구성 구조체(FActorPool)
+#### 타입 기반 풀 구조체(FActorPool)
 - `FGameplayTag`를 키로 하는 `TMap`을 사용해 객체 타입별 풀 분리
 - 특징
   - 사용 중인 오브젝트가 많아 부족할 경우 자동 확장
@@ -35,3 +35,23 @@ Listen Server 환경에서 동작하는 Unreal Engine 5 기반 Object Pool 시�
 - UPoolableComponent
   - 액터에 부착되어 객체 별 로직을 수행
   - 코드의 중복으로 인한 반복 작업을 피함
+
+## 📊 성능 비교
+#### 개요
+- 여러 개의 객체를 생성할 때, ObjectPool과 SpawnActor의 성능을 비교
+
+#### 조건
+- 넷 모드는 `Play As Listen Server`, 플레어어 수는 2로 세팅 후 게임 실행
+- 마우스 우클릭을 유지하여 0.2초마다 100개의 오브젝트를 활성화
+- 활성화된 오브젝트는 0.8초 후 비활성화
+- 약 10초간 테스트
+- 언리얼 인사이트를 통해 결과 확인
+
+#### 결과
+- SpawnActor
+<img width="678" height="115" alt="SpawnActor 2025-11-20 153538" src="https://github.com/user-attachments/assets/780d5889-d2df-4f7a-916f-4168d702802e" />
+
+- ObjectPool
+<img width="649" height="104" alt="ObjectPool 2025-11-20 153548" src="https://github.com/user-attachments/assets/c7e10928-6fda-4b5d-a645-a5e8dc272d05" />
+
+- SpawnActor에 비해 안정적으로 프레임을 유지
