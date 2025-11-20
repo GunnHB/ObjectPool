@@ -55,3 +55,6 @@ Listen Server 환경에서 동작하는 Unreal Engine 5 기반 Object Pool 시�
 <img width="649" height="104" alt="ObjectPool 2025-11-20 153548" src="https://github.com/user-attachments/assets/c7e10928-6fda-4b5d-a645-a5e8dc272d05" />
 
 - SpawnActor에 비해 안정적으로 프레임을 유지
+
+## 🔗 참고
+[Subsystem을 활용한 ObjectPool](https://gunnhb.github.io/posts/Subsystem%EC%9D%84-%ED%99%9C%EC%9A%A9%ED%95%9C-ObjectPool_1/)
